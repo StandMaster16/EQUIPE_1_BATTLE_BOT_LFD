@@ -1,6 +1,5 @@
 #include <BluetoothSerial.h>
 #include <Servo.h>
-#include <Ultrasonic.h>
 
 //Pinos motores
 
@@ -24,7 +23,6 @@
 
 BluetoothSerial SerialBT
 Servo servo;
-Ultrasonic sensor;
 
 int velocidade = 255;
 String message = "";
@@ -142,15 +140,17 @@ void loop() {
     delay(2000);
   }
 
-  if (message = "lanca"){
+
+  pulso = pulseIn(ECHO, HIGH);
+  distancia = (pulso*c)/2;
+  SerialBT.println(distancia);
+
+  if (distancia <= 30){
     servo.write(pos);
     delay(1000);
     servo.write(0);
   }
 
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration*c)/2;
-  SerialBT.println(distance);
   delay(100);
 
 }
