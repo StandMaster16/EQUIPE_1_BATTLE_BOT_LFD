@@ -4,25 +4,28 @@
 //Pinos motores
 
 // Motor Esquerda
-#define IN1 13
-#define IN2 14
-#define ENA 15
+#define IN1 22
+#define IN2 23
+#define ENA 25
 
 // Motor Direita
-#define IN3 21
-#define IN4 22
-#define ENB 23
+#define IN3 26
+#define IN4 27
+#define ENB 16
 
 // Pino do Servo
-#define SERVO 25
+#define SERVO 17
 
 // Pino do sensor
-#define TRIG 26
-#define ECHO 27
+#define TRIG 13
+#define ECHO 14
 #define c 0.0343
 
-#define RED 33
-#define RGB 28
+#define BLUE1 5
+#define BLUE2 21
+
+#define RED1 18
+#define RED2 19
 
 BluetoothSerial SerialBT;
 Servo servo;
@@ -86,7 +89,15 @@ void setup() {
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
 
-  pinMode(RED, OUTPUT);
+  pinMode(RED1, OUTPUT);
+  pinMode(RED2, OUTPUT);
+  pinMode(BLUE1, OUTPUT);
+  pinMode(BLUE2, OUTPUT);
+
+  digitalWrite(RED1, LOW);
+  digitalWrite(RED2, LOW);
+  digitalWrite(BLUE1, HIGH);
+  digitalWrite(BLUE2, HIGH);
 
 }
 
@@ -139,11 +150,17 @@ void loop() {
 
     if (distance <= 30 && distance > 0){
       servo.write(pos);
-      digitalWrite(RED, HIGH);
+      digitalWrite(RED1, HIGH);
+      digitalWrite(RED2, HIGH);
+      digitalWrite(BLUE1, LOW);
+      digitalWrite(BLUE2, LOW);
   
     } else {
       servo.write(0);
-      digitalWrite(RED, LOW);
+      digitalWrite(RED1, LOW);
+      digitalWrite(RED2, LOW);
+      digitalWrite(BLUE1, HIGH);
+      digitalWrite(BLUE2, HIGH);
     }
 
   }
