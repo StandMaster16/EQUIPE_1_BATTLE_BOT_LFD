@@ -21,18 +21,52 @@
 #define ECHO 27
 #define c 0.0343
 
-#define LED1 33
+#define RED 33
+#define RGB 28
 
 BluetoothSerial SerialBT;
 Servo servo;
 
-int velocidade = 255;
-String message = "";
-int pos = 45;
-float pulso, distancia;
+int velocity = 255;
+String message = ""; 
+String currentState = "parar";
+int pos = 45; // Servo
+unsigned long movTime = 0;
+const long movInterval = 2000;
 
-unsigned long lastDistanceTime = 0;
-const long distanceInterval = 200;
+float pulse, distance;
+unsigned long distanceTime = 0;
+const long distanceInterval = 500;
+
+void move(String msg){
+
+      if (msg == "up" || msg == "dash"){
+        digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+        digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+        analogWrite(ENA, velocity); analogWrite(ENB, velocity);
+
+      } else if (msg == "down" || msg == "recuo"){
+        digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
+        digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
+        analogWrite(ENA, velocity); analogWrite(ENB, velocity);
+
+      } else if (msg == "left"){
+        digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
+        digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+        analogWrite(ENA, velocity); analogWrite(ENB, velocity);
+
+      } else if (msg == "right"){
+        digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+        digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
+        analogWrite(ENA, velocity); analogWrite(ENB, velocity);
+      
+      } else if (msg == "parar"){
+        digitalWrite(IN1, LOW); digitalWrite(IN2, LOW);
+        digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);
+        analogWrite(ENA, 0); analogWrite(ENB, 0);
+      }
+
+}
 
 void setup() {
   Serial.begin(115200);
@@ -52,125 +86,66 @@ void setup() {
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
 
-  pinMode(LED1, OUTPUT);
+  pinMode(RED, OUTPUT);
 
 }
 
 void loop() {
+  
+  unsigned long currentMillis = millis();
 
   if (SerialBT.available()){
 
     message = SerialBT.readString();
     message.trim();
 
-  }
-
-  if (!message.isEmpty()){
-
-    if (message == "up"){
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
+    if (!message.isEmpty()){
+      if (message == "up" || message == "down" || message == "left" || message == "right" || message == "parar"){
+        currentState = message;
+        movTime = 0;
+      
+      } else if (message == "dash" || message == "recuo"){
+        currentState = message;
+        movTime = currentMillis;
+      }
     }
-
-    else if (message == "down"){
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
-    }
-
-    else if (message == "left"){
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
-    }
-
-    else if (message == "right"){
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
-    }
-
-    else if (message == "parar"){
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, LOW);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, LOW);
-
-      analogWrite(ENA, 0);
-      analogWrite(ENB, 0);
-    }
-
-    else if (message == "dash"){
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
-
-      delay(2000);
-    }
-
-    else if (message == "recuo"){
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-
-      analogWrite(ENA, velocidade);
-      analogWrite(ENB, velocidade);
-
-      delay(2000);
-    }
-
-    message = "";
 
   }
 
-  unsigned long currentMillis = millis();
+  if (currentState == "dash" || currentState == "recuo"){
 
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(5);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
+    if (currentMillis-movTime < movInterval) move(currentState);
+    else {
+      currentState = "parar";
+      move(currentState);
+    }
 
-  pulso = pulseIn(ECHO, HIGH);
-  distancia = (pulso*c)/2;
-  SerialBT.println(distancia);
-
-  if (distancia <= 30){
-    servo.write(pos);
-    digitalWrite(LED1, HIGH);
-    delay(1000);
-    servo.write(0);
+  } else {
+    move(currentState);
   }
 
-  delay(1000);
+  if (currentMillis-distanceTime >= distanceInterval) {
+    distanceTime = currentMillis;
+
+    digitalWrite(TRIG, LOW);
+    delayMicroseconds(5);
+    digitalWrite(TRIG, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG, LOW);
+
+    pulse = pulseIn(ECHO, HIGH);
+    distance = (pulse*c)/2;
+    SerialBT.println(String(distance));
+
+    if (distance <= 30 && distance > 0){
+      servo.write(pos);
+      digitalWrite(RED, HIGH);
+  
+    } else {
+      servo.write(0);
+      digitalWrite(RED, LOW);
+    }
+
+  }
 
 }
