@@ -4,21 +4,21 @@
 //Pinos motores
 
 // Motor Esquerda
-#define IN1 22
-#define IN2 23
-#define ENA 25
+#define IN1 27
+#define IN2 26
+#define ENA 14
 
 // Motor Direita
-#define IN3 26
-#define IN4 27
-#define ENB 16
+#define IN3 25
+#define IN4 33
+#define ENB 32
 
 // Pino do Servo
-#define SERVO 17
+#define SERVO 23
 
 // Pino do sensor
-#define TRIG 13
-#define ECHO 14
+#define TRIG 4
+#define ECHO 16
 #define c 0.0343
 
 #define BLUE1 5
@@ -30,7 +30,7 @@
 BluetoothSerial SerialBT;
 Servo servo;
 
-int velocity = 255;
+int velocity = 150;
 String message = ""; 
 String currentState = "parar";
 int pos = 45; // Servo
@@ -44,11 +44,15 @@ const long distanceInterval = 500;
 void move(String msg){
 
       if (msg == "up" || msg == "dash"){
-        digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
-        digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
-        analogWrite(ENA, velocity); analogWrite(ENB, velocity);
+        digitalWrite(IN1, HIGH); 
+        digitalWrite(IN2, LOW);
+        digitalWrite(IN3, HIGH); 
+        digitalWrite(IN4, LOW);
+        analogWrite(ENA, velocity); 
+        analogWrite(ENB, velocity);
+        Serial.println("Eu estive aqui");
 
-      } else if (msg == "down" || msg == "recuo"){
+      } else if (msg == "down" || msg == "RECUO"){
         digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
         digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
         analogWrite(ENA, velocity); analogWrite(ENB, velocity);
@@ -111,6 +115,7 @@ void loop() {
     message.trim();
 
     if (!message.isEmpty()){
+      Serial.println("Mensagem Recebida do App: [" + message + "]");
       if (message == "up" || message == "down" || message == "left" || message == "right" || message == "parar"){
         currentState = message;
         movTime = 0;
