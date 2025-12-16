@@ -1,33 +1,35 @@
-#include <BluetoothSerial.h>
-#include <Servo.h>
+#include "BluetoothSerial.h"
+#include <ESP32Servo.h>
 
 //Pinos motores
 
 // Motor Esquerda
-#define IN1
-#define IN2
-#define ENA
+#define IN1 13
+#define IN2 14
+#define ENA 25
 
 // Motor Direita
-#define IN3
-#define IN4
-#define ENB
+#define IN3 26
+#define IN4 27
+#define ENB 33
 
 // Pino do Servo
-#define SERVO
+#define SERVO 32
 
 // Pino do sensor
-#define TRIG
-#define ECHO
+#define TRIG 35
+#define ECHO 34
 #define c 0.0343
 
-BluetoothSerial SerialBT
+#define LED1 18
+
+BluetoothSerial SerialBT;
 Servo servo;
 
 int velocidade = 255;
 String message = "";
 int pos = 45;
-float duration, distance;
+float pulso, distancia;
 
 void setup() {
   Serial.begin(115200);
@@ -46,6 +48,8 @@ void setup() {
 
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
+
+  pinMode(LED1, OUTPUT);
 
 }
 
@@ -70,7 +74,7 @@ void loop() {
     analogWrite(ENB, velocidade);
   }
 
-  if (message = "down"){
+  if (message == "down"){
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
 
@@ -81,7 +85,7 @@ void loop() {
     analogWrite(ENB, velocidade);
   }
 
-  if (message = "left"){
+  if (message == "left"){
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
 
@@ -92,7 +96,7 @@ void loop() {
     analogWrite(ENB, velocidade);
   }
 
-  if (message = "right"){
+  if (message == "right"){
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
 
@@ -103,7 +107,7 @@ void loop() {
     analogWrite(ENB, velocidade);
   }
 
-  if (message = "parar"){
+  if (message == "parar"){
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, LOW);
 
@@ -114,7 +118,7 @@ void loop() {
     analogWrite(ENB, 0);
   }
 
-  if (message = "dash"){
+  if (message == "dash"){
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
 
@@ -127,7 +131,7 @@ void loop() {
     delay(2000);
   }
 
-  if (message = "recuo"){
+  if (message == "recuo"){
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
 
@@ -140,13 +144,13 @@ void loop() {
     delay(2000);
   }
 
-
   pulso = pulseIn(ECHO, HIGH);
   distancia = (pulso*c)/2;
   SerialBT.println(distancia);
 
   if (distancia <= 30){
     servo.write(pos);
+    digitalWrite(LED1, HIGH);
     delay(1000);
     servo.write(0);
   }
