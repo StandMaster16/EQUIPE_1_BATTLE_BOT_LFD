@@ -30,12 +30,13 @@
 BluetoothSerial SerialBT;
 Servo servo;
 
-int velocity = 150;
+int velocity = 200;
 String message = ""; 
 String currentState = "parar";
 int pos = 45; // Servo
 unsigned long movTime = 0;
 const long movInterval = 2000;
+const long movInterval2 = 500;
 
 float pulse, distance;
 unsigned long distanceTime = 0;
@@ -52,7 +53,7 @@ void move(String msg){
         analogWrite(ENB, velocity);
         Serial.println("Eu estive aqui");
 
-      } else if (msg == "down" || msg == "RECUO"){
+      } else if (msg == "down" || msg == "recuo"){
         digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
         digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
         analogWrite(ENA, velocity); analogWrite(ENB, velocity);
@@ -131,6 +132,14 @@ void loop() {
   if (currentState == "dash" || currentState == "recuo"){
 
     if (currentMillis-movTime < movInterval) move(currentState);
+    else {
+      currentState = "parar";
+      move(currentState);
+    }
+
+  } else if (currentState == "left" || currentState == "right"){
+
+    if (currentMillis-movTime < movInterval2) move (currentState);
     else {
       currentState = "parar";
       move(currentState);
